@@ -10,7 +10,7 @@ return false
 return true
 
 }
-const isParticularString = (st,arr) =>
+const isParticularString= (st,arr) =>
 {
     if( !isString(st) || !arr.includes(st))
     return false
