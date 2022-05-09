@@ -1,24 +1,22 @@
 const jwt = require("jsonwebtoken");
 const userModel = require("../model/userModel");
-
-
+const input = require("./validator/inputValidator");
 
 
 const loginUser = async function(req, res) {
     try {
-        if (!Object.keys(req.body).length === 0) return res.status(400).send({ status: false, msg: "Please enter  mail and password" })
-        let userName = req.body.email
-        let password = req.body.password;
+        if (!input.isValidReqBody(req.body)) 
+        return res.status(400).send({ status: false, msg: "Please enter  mail and password" })
+        let {userName,password} = req.body
 
-        if (!userName || userName === undefined) {
+        if (!input.isString(userName)) {
             return res.status(400).send({ status: false, msg: "please enter email" })
         }
-        if (!password || password === undefined) {
+        if (!input.isString(password)) {
             return res.status(400).send({ status: false, msg: "please enter password" })
         }
-        userName = userName.trim().toLowerCase()
-        password = password.trim()
-        let user = await userModel.findOne({ email: userName, password: password });
+        
+        let user = await userModel.findOne({ email: userName.trim().toLowerCase(), password: password });
         if (!user)
             return res.status(404).send({ status: false, msg: "Please enter a valid email address and password" });
 

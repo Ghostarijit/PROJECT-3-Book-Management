@@ -8,6 +8,7 @@ const isString = st =>{
 if( typeof st!= "string" ||st.trim().length === 0)
 return false
 return true
+
 }
 const isParticularString = (st,arr) =>
 {
