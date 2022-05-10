@@ -28,16 +28,14 @@ const isParticularString = (st, arr) =>  // string array
         return false
     return true
 }
-
+// to check the values present in obj are coming or not,should be string, 
+//if optional is true then it will check datatype should be string only if values are comming otherwise ignore that field 
 const allString = (obj, optional) => {
-    let error = ""
-    let error2 = ""
+    let error = "",error2 ="";
     for (let key in obj) {
-        if (typeof optional === "undefined") {
-            if (typeof (obj[key]) === "undefined")
-                error += key + " "
-            if (typeof (obj[key]) !== "string")
-                error2 += key + " "
+        if ( optional === undefined) {
+            if ((obj[key]) === undefined)  error += key + " "     
+            if (typeof (obj[key]) !== "string")  error2 += key + " "       
         }
         if (optional == true) {
             if (optional != undefined && typeof (obj[key]) !== "string")
@@ -50,7 +48,9 @@ const allString = (obj, optional) => {
         return [false, error2 + " should have valid string datatype"]
     return [true]
 }
-
+// here obj can be contatin one or more array
+// we are cheking the elements of array should have string datatype
+// and should not contain empty strings
 const arrHasString = (obj) => {
     for (let key in obj) {
         if (typeof obj[key] == 'undefined' || !Array.isArray(obj[key]))
@@ -68,4 +68,4 @@ const arrHasString = (obj) => {
 
 
 
-module.exports = { isValidReqBody, isString, isParticularString, allString, isNumber, arrHasString,isOptionalString}
+module.exports = { isValidReqBody, isString, isParticularString, allString, isNumber, arrHasString, isOptionalString }

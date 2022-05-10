@@ -72,11 +72,11 @@ const loginUser = async function (req, res) {
         let { email, password } = req.body
         
         if (!client.isValid(email,client.regex.email)) { 
-            return res.status(400).send({ status: false, msg: client.error.email.invalid })
+            return res.status(400).send({ status: false, msg:"Please enter valid email" })
         }
 
         if (!client.isValid(password, client.regex.password))
-            return res.status(400).send({ status: false, msg: client.error.password.shortInvalid })
+            return res.status(400).send({ status: false, msg: "Please enter valid password" })
 
         let user = await userModel.findOne({ email: email.trim().toLowerCase(), password: password }).select({ _id: 1 }).lean();
         if (!user)

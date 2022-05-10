@@ -9,7 +9,7 @@ const regex = {
     pincode: /^[0-9]{6}$/,
     name: /^[a-zA-z ]{2,30}$/,
     isbn: /^\d{13}$/,
-    releaseDate: /^\d{4}-\d{1,2}-\d{1,2}/
+    releaseDate: /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/
 }
 
 const isValid = (field, regex) => {
@@ -17,8 +17,6 @@ const isValid = (field, regex) => {
         return false
     return true;
 }
-
-
 
 module.exports = { isValid, regex};
 
