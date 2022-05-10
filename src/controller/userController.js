@@ -1,6 +1,7 @@
+const cli = require("nodemon/lib/cli")
 const userModel = require("../model/userModel")
 const input = require("./validator/inputValidator")
-const client = require("./validator/userValidator")
+const client = require("./validator/regexValidator")
 
 
 const createuser = async (req, res) => {
@@ -12,41 +13,42 @@ const createuser = async (req, res) => {
 
         //extracting variables from request body
         const { phone, name, title, email, password, address } = req.body
-
+        
+        let output;
         //input validations    // isValid function is defined in client 
         if (!client.isValid(name, client.regex.name))
-            return res.status(400).send({ status: false, message: "Please enter valid full Name" })
+            return res.status(400).send({ status: false, message: client.error.name })
 
         if (!input.isParticularString(title, ["Mr", "Miss", "Mrs"]))
-            return res.status(400).send({ status: false, message: "plz enter valid title one of Mr,Miss or Mrs" })
+            return res.status(400).send({ status: false, message:client.error.title })
 
         if (!client.isValid(email, client.regex.email))
-            return res.status(400).send({ status: false, message: "please enter valid email" });
+            return res.status(400).send({ status: false, message: client.error.email.invalid });
 
         if (!client.isValid(phone, client.regex.mobile)) {
-            return res.status(400).send({ status: false, message: " phone number should have 10 digits only starting with 6,7,8,9" });
+            return res.status(400).send({ status: false, message: client.error.mobile.invalid });
         }
 
         if (!client.isValid(password, client.regex.password))
-            return res.status(400).send({ status: false, message: "enter valid password with following conditions 1.At least one digit, 2.At least one lowercase character,3.At least one uppercase character,4.At least one special character, 5. At least 8 characters in length, but no more than 16" });
+            return res.status(400).send({ status: false, message:client.error.password.invalid });
 
         if (!input.isString(address.street))
-            return res.status(400).send({ status: false, message: "in address  please enter valid street" })
+            return res.status(400).send({ status: false, message:client.error.address.street })
 
         if (!input.isString(address.city))
-            return res.status(400).send({ status: false, message: "in address  please enter valid city" })
+            return res.status(400).send({ status: false, message:client.error.address.city })
 
         if (!client.isValid(address.pincode, client.regex.pincode))
-            return res.status(400).send({ status: false, message: "in address pincode must be present present & 6 digit long" })
+            return res.status(400).send({ status: false, message:client.error.address.pincode })
 
 
         // email & mobile unique or not
         const isEmailUnique = await userModel.findOne({ email: email.toLowerCase() }).count()
-        if (isEmailUnique == 1) return res.status(400).send({ status: false, message: "this email is already present" })
+        if (isEmailUnique == 1) return res.status(400).send({ status: false, message: client.error.email.already })
 
 
         const isMobileUnique = await userModel.findOne({ phone: phone }).count()
-        if (isMobileUnique == 1) return res.status(400).send({ status: false, message: "this phone is already present" })
+        if (isMobileUnique == 1) return res.status(400).send({ status: false, message: client.error.mobile.already })
 
         //creating new document in database
         const user = await userModel.create(req.body)
@@ -66,15 +68,15 @@ const loginUser = async function (req, res) {
         let { email, password } = req.body
         
         if (!client.isValid(email,client.regex.email)) { 
-            return res.status(400).send({ status: false, msg: "please enter valid email" })
+            return res.status(400).send({ status: false, msg: client.error.email.invalid })
         }
 
         if (!client.isValid(password, client.regex.password))
-            return res.status(400).send({ status: false, msg: "Invalid Password" })
+            return res.status(400).send({ status: false, msg: client.error.password.shortInvalid })
 
         let user = await userModel.findOne({ email: email.trim().toLowerCase(), password: password }).select({ _id: 1 }).lean();
         if (!user)
-            return res.status(404).send({ status: false, msg: "Please enter a valid email address and password" });
+            return res.status(404).send({ status: false, msg:client.error.login.invalidCred});
 
         const token = jwt.sign({ authorId: user._id.toString() }, "project-3-group-13", { expiresIn: "1h" });
 
