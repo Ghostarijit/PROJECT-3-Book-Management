@@ -31,7 +31,7 @@ const allString = (obj) =>{
         error+= key +" "
     }
     if(error.length!=0)
-    return [false,"please enter valid "+error]
+    return [false,"You'r missing Mandatory fields :- "+error]
     return [true]
 }
 

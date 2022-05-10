@@ -1,4 +1,3 @@
-const cli = require("nodemon/lib/cli")
 const userModel = require("../model/userModel")
 const input = require("./validator/inputValidator")
 const client = require("./validator/regexValidator")
@@ -14,6 +13,10 @@ const createuser = async (req, res) => {
         //extracting variables from request body
         const { phone, name, title, email, password, address } = req.body
         
+        const allInputValid = input.allString({ title, name, phone, email,password,"street_in_address ":address.street,"city_in_address ":address.city,"pincode_in_address ":address.pincode })
+        if (!allInputValid[0])
+            return res.status(400).send({ status: false, message: allInputValid[1] })
+
         let output;
         //input validations    // isValid function is defined in client 
         if (!client.isValid(name, client.regex.name))
