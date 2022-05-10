@@ -12,10 +12,9 @@ createBook = async (req, res) => {
 
         const { title, excerpt, userId, ISBN, category, subcategory, releasedAt } = req.body
 
-        const allInputValid = input.allString({ title, excerpt, category, ISBN })
+        const allInputValid = input.allString({ title, excerpt, category, ISBN, releasedAt })
         if (!allInputValid[0])
             return res.status(400).send({ status: false, message: allInputValid[1] })
-
 
         if (!client.isValid(ISBN, client.regex.isbn))
             return res.status(400).send({ status: false, message: client.error.isbn })
@@ -27,14 +26,34 @@ createBook = async (req, res) => {
         if (!userId || !mongoose.Types.ObjectId.isValid(userId.trim()))
             return res.status(400).send({ status: false, message: "Enter a valid userId" })
 
-    //title, 
+        if(!client.isValid(releasedAt,client.regex.releaseDate))
+            return res.status(400).send({ status: false, message: client.error.releaseDate })
 
+        // checking title,isbn,userid unique or not
+        const isUniqueISBN = await bookModel.findOne({ ISBN: ISBN.trim() }).count()
+        if (isUniqueISBN == 1)
+        return res.status(400).send({ status: false, message: "ISBN is already present,please enter unique one" })
 
-        res.send("dummy response")
+        const isUniqueTitle = await bookModel.findOne({ titile: title.trim() }).count()
+        if (isUniqueTitle == 1)
+        return res.status(400).send({ status: false, message: "title is already present,please enter unique one" })   
+        
+        const isValidUserId = await userModel.findOne({_id:userId}).count()
+        if(isValidUserId==0)
+        return res.status(404).send({ status: false, message: "Author Not Found" }) 
+
+        const data = await bookModel.create({title,excerpt,category,ISBN,releasedAt,subcategory,userId})
+        return res.status(201).send({ status: false, message: "Success", data:data }) 
+
     }
     catch (error) {
         res.status(500).send({ status: false, message: error.message })
     }
+}
+
+const getBooks = async(req,res)=>{
+
+    
 }
 
 
