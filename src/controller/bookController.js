@@ -17,7 +17,7 @@ createBook = async (req, res) => {
             return res.status(400).send({ status: false, message: allInputValid[1] })
 
         if (!client.isValid(ISBN, client.regex.isbn))
-            return res.status(400).send({ status: false, message: client.error.isbn })
+            return res.status(400).send({ status: false, message:  " please enter a 13 digit long valid ISBN" })
 
         const validSbucategory = input.arrHasString({ subcategory });
         if (!validSbucategory[0])
@@ -27,7 +27,7 @@ createBook = async (req, res) => {
             return res.status(400).send({ status: false, message: "Enter a valid userId" })
 
         if(!client.isValid(releasedAt,client.regex.releaseDate))
-            return res.status(400).send({ status: false, message: client.error.releaseDate })
+            return res.status(400).send({ status: false, message: "releaseAt should have date in XXXX-XX-XX format" })
 
         // checking title,isbn,userid unique or not
         const isUniqueISBN = await bookModel.findOne({ ISBN: ISBN.trim() }).count()
@@ -53,7 +53,10 @@ createBook = async (req, res) => {
 
 const getBooks = async(req,res)=>{
 
-    
+    const { userId,category,subcategory}= req.body
+
+
+
 }
 
 

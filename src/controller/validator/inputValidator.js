@@ -10,8 +10,8 @@ const isString = st => {
     return true
 }
 
-const isOptionalString=  st => {
-    if (typeof st!="undefined" && (typeof st != "string" || st.trim().length === 0))
+const isOptionalString = st => {
+    if (typeof st != "undefined" && (typeof st != "string" || st.trim().length === 0))
         return false
     return true
 }
@@ -29,18 +29,29 @@ const isParticularString = (st, arr) =>  // string array
     return true
 }
 
-const allString = (obj) => {
+const allString = (obj, optional) => {
     let error = ""
+    let error2 = ""
     for (let key in obj) {
-        if (!isString(obj[key]))
-            error += key + " "
+        if (typeof optional === "undefined") {
+            if (typeof (obj[key]) === "undefined")
+                error += key + " "
+            if (typeof (obj[key]) !== "string")
+                error2 += key + " "
+        }
+        if (optional == true) {
+            if (optional != undefined && typeof (obj[key]) !== "string")
+                error2 += key + " "
+        }
     }
     if (error.length != 0)
         return [false, "You'r missing Mandatory fields :- " + error]
+    if (error2.length != 0)
+        return [false, error2 + " should have valid string datatype"]
     return [true]
 }
 
-const arrHasString = obj => {
+const arrHasString = (obj) => {
     for (let key in obj) {
         if (typeof obj[key] == 'undefined' || !Array.isArray(obj[key]))
             return [false, key + " is a mandatory field and should be an array"]
@@ -57,4 +68,4 @@ const arrHasString = obj => {
 
 
 
-module.exports = { isValidReqBody, isString, isParticularString, allString, isNumber, arrHasString }
+module.exports = { isValidReqBody, isString, isParticularString, allString, isNumber, arrHasString,isOptionalString}
