@@ -56,16 +56,11 @@ const bookSchema = new mongoose.Schema({
         default: false
 
     },
-    releaseddAt: {
-        type: Date,
+    releasedAt: {
+        type: String,
         default: null
     },
 
-    isPublished: {
-        type: Boolean,
-        default: false
-
-    }
 }, { timestamps: true });
 
 module.exports =new  mongoose.model('Book', bookSchema)

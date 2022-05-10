@@ -1,6 +1,7 @@
 const userModel = require("../model/userModel")
 const input = require("./validator/inputValidator")
 const client = require("./validator/regexValidator")
+const jwt = require("jsonwebtoken")
 
 
 const createuser = async (req, res) => {
@@ -47,7 +48,7 @@ const createuser = async (req, res) => {
 
 
         // email & mobile unique or not
-        const isEmailUnique = await userModel.findOne({ email: email.toLowerCase() }).count()
+        const isEmailUnique = await userModel.findOne({ email: email }).count()
         if (isEmailUnique == 1) return res.status(400).send({ status: false, message:"Entered Email already present" })
 
 
@@ -78,11 +79,11 @@ const loginUser = async function (req, res) {
         if (!client.isValid(password, client.regex.password))
             return res.status(400).send({ status: false, msg: "Please enter valid password" })
 
-        let user = await userModel.findOne({ email: email.trim().toLowerCase(), password: password }).select({ _id: 1 }).lean();
+        let user = await userModel.findOne({ email: email, password: password }).select({ _id: 1 }).lean();
         if (!user)
-            return res.status(404).send({ status: false, msg:"You have entered invalid credentials"});
+            return res.status(400).send({ status: false, msg:"You have entered invalid credentials"});
 
-        const token = jwt.sign({ authorId: user._id.toString() }, "project-3-group-13", { expiresIn: "1h" });
+        const token = jwt.sign({ userId: user._id.toString() }, "project-3-group-13", { expiresIn: "1h" });
 
         res.setHeader("x-api-key", token);
         return res.status(200).send({ status: true, message: "Success", data: token });

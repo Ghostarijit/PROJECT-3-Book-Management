@@ -1,32 +1,25 @@
 const jwt = require("jsonwebtoken");
 
-const authToken = (token) => {
-    let tokenValidate = jwt.verify(token, "project-1-group-12", (err, data) => {
-        if (err)
-            return null
-        else {
-            return data
-        }
-    })
-    return tokenValidate
-}
 
 
 const validateToken = async function(req, res, next) {
         try {
             let token = req.headers['x-Api-Key'] || req.headers['x-api-key']
             if (!token) {
-                return res.status(401).send({ status: false, msg: "token must be present" });
+                return res.status(401).send({ status: false, msg: "Unauthorised access, login..." });
             }
-            let decodedToken = authToken(token)
+            let decodedToken ;
+            try {
+                decodedToken= jwt.verify(token,"project-3-group-13")
+            }
+            catch(error){
+                return res.status(401).send({ status: false, msg: "Unauthorised access, login..." });
+            }
             if (!decodedToken) {
                 return res.status(401).send({ status: false, msg: "inavlid token" })
             }
-            console.log(decodedToken)
-
-            req["authorId"] = decodedToken.authorId
-            console.log(req["authorId"])
-
+            
+            req["userId"] = decodedToken.userId
             next()
 
         } catch (erre) {
@@ -34,4 +27,4 @@ const validateToken = async function(req, res, next) {
 
         }
     }
-    //module.exports.validateToken = validateToken
+    module.exports = {validateToken}

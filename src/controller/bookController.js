@@ -1,5 +1,6 @@
 const bookModel = require("../model/bookModel")
 const userModel = require("../model/userModel")
+const reviewModel = require("../model/reviewModel")
 const input = require("../controller/validator/inputValidator")
 const client = require("./validator/regexValidator")
 const mongoose = require("mongoose")
@@ -12,9 +13,15 @@ const createBook = async (req, res) => {
 
         const { title, excerpt, userId, ISBN, category, subcategory, releasedAt } = req.body
 
-        const allInputValid = input.allString({ title, excerpt, category, ISBN, releasedAt })
+        const allInputValid = input.allString({ title, excerpt, category, ISBN, releasedAt, userId })
         if (!allInputValid[0])
             return res.status(400).send({ status: false, message: allInputValid[1] })
+
+        if (!userId || !mongoose.isValidObjectId(userId.trim()))
+            return res.status(400).send({ status: false, message: "Enter a valid userId" })
+            //authorisation 
+        if(req.userId!==userId.trim())
+        return res.status(400).send({ status: false, message: "Use your own userId" })
 
         if (!client.isValid(ISBN, client.regex.isbn))
             return res.status(400).send({ status: false, message: " please enter a 13 digit long valid ISBN" })
@@ -23,25 +30,22 @@ const createBook = async (req, res) => {
         if (!validSbucategory[0])
             return res.status(400).send({ status: false, message: validSbucategory[1] })
 
-        if (!userId || !mongoose.Types.ObjectId.isValid(userId.trim()))
-            return res.status(400).send({ status: false, message: "Enter a valid userId" })
-
         if (!client.isValid(releasedAt, client.regex.releaseDate))
-            return res.status(400).send({ status: false, message: "releaseAt should have date in XXXX-XX-XX format  " })
+            return res.status(400).send({ status: false, message: "releaseAt should have date in YYYY-MM-DD format  " })
 
         // checking title,isbn,userid unique or not
-        const isUniqueISBN = await bookModel.findOne({ ISBN: ISBN.trim() }).count()
+        const isUniqueISBN = await bookModel.findOne({ ISBN: ISBN }).count()
         if (isUniqueISBN == 1)
             return res.status(400).send({ status: false, message: "ISBN is already present,please enter unique one" })
 
-        const isUniqueTitle = await bookModel.findOne({ titile: title.trim() }).count()
+        const isUniqueTitle = await bookModel.findOne({ titile: title }).count()
         if (isUniqueTitle == 1)
             return res.status(400).send({ status: false, message: "title is already present,please enter unique one" })
 
         const isValidUserId = await userModel.findOne({ _id: userId }).count()
         if (isValidUserId == 0)
             return res.status(404).send({ status: false, message: "Author Not Found" })
-        console.log(subcategory)
+
         const data = await bookModel.create({ title, excerpt, category, ISBN, releasedAt, subcategory, userId })
         return res.status(201).send({ status: false, message: "Success", data: data })
 
@@ -60,8 +64,8 @@ const getBooks = async (req, res) => {
         isDeleted: false
     }
 
-    if(filter.userId && !mongoose.isValidObjectId(filter.userId))
-    return res.status(400).send({status:false,message:"Please Enter valid userId"})
+    if (filter.userId && !mongoose.isValidObjectId(filter.userId))
+        return res.status(400).send({ status: false, message: "Please Enter valid userId" })
 
     filterData = JSON.parse(JSON.stringify(filter))
 
@@ -74,5 +78,91 @@ const getBooks = async (req, res) => {
 
 }
 
+const getBookById = async (req, res) => {
+    try {
+        const bookId = req.params.bookId;
 
-module.exports = { createBook, getBooks }
+        if (!mongoose.isValidObjectId(bookId.trim()))
+            return res.status(400).send({ status: false, message: "Please Enter valid book Id " })
+
+        const bookData = await bookModel.findOne({ _id: bookId, isDeleted: false }).lean()
+        if (!bookData)
+            return res.status(404).send({ status: false, message: "No Book found" })
+
+        const reviewData = await reviewModel.find({ bookId }).lean()
+        bookData.reviewsData = reviewData
+
+        res.status(200).send({ status: true, message: "Book List", data: bookData })
+    }
+    catch (error) {
+        return res.status(500).send({ status: true, data: error.message })
+    }
+}
+
+const updateBooks = async (req, res) => {
+    try {
+
+        const bookId = req.params.bookId;
+
+        if (!mongoose.isValidObjectId(bookId.trim()))
+            return res.status(400).send({ status: false, message: "Please Enter valid book Id " })
+
+        const book = await bookModel.findOne({ _id: bookId, isDeleted: false ,userId: req.userId}).lean()
+        if (!book)
+            return res.status(404).send({ status: false, message: "No Book found" })
+
+        if (!input.isValidReqBody(req.body))
+            return res.status(400).send({ status: false, message: "Please provide some data for updation in request body" })
+
+        const data = {
+            title: req.body.title,
+            excerpt: req.body.excerpt,
+            releasedAt: req.body.releasedAt,
+            ISBN: req.body.ISBN
+        }
+
+        if (data.releasedAt)
+            if (!client.isValid(data.releasedAt, client.regex.releaseDate))
+                return res.status(400).send({ status: false, message: "please enter release date in YYYY-MM-DD format" })
+
+        if (data.ISBN)
+            if (!client.isValid(data.ISBN, client.regex.isbn))
+                return res.status(400).send({ status: false, message: "please enter 13 digit long ISBN " })
+
+        const isUniqueISBN = await bookModel.findOne({ ISBN: data.ISBN }).count()
+        if (isUniqueISBN == 1)
+            return res.status(400).send({ status: false, message: "ISBN is already present,please enter unique one" })
+
+        const isUniqueTitle = await bookModel.findOne({ title: data.title }).count()
+        if (isUniqueTitle == 1)
+            return res.status(400).send({ status: false, message: "title is already present,please enter unique one" })
+
+        const updatedBook = await bookModel.findOneAndUpdate({ _id: bookId, isDeleted: false,userId:req.userId }, data, { new: true })
+
+        res.status(200).send({ status: true, message: "Success", data: updatedBook })
+    }
+    catch (error) {
+        res.status(500).send({ status: false, message: error.message })
+    }
+}
+
+
+const deleteBooks = async (req, res) => {
+    try {
+        const bookId = req.params.bookId;
+        const date = new Date();
+        if (!mongoose.isValidObjectId(bookId.trim()))
+            return res.status(400).send({ status: false, message: "Please Enter valid book Id " })
+
+        const book = await bookModel.findOneAndUpdate({ _id: bookId, isDeleted: false,userId:req.userId }, { isDeleted: true, deletedAt: date })
+        if (!book)
+            return res.status(404).send({ status: false, message: "No Book found" })
+
+        res.status(200).send({ status: true, message: "Success" })
+    }
+    catch (error) {
+        res.status(500).send({ status: false, message: error.message })
+    }
+}
+
+module.exports = { createBook, getBooks, getBookById, updateBooks, deleteBooks }
