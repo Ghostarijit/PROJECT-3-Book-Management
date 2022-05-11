@@ -19,7 +19,7 @@ const validateToken = async function(req, res, next) {
                 return res.status(401).send({ status: false, msg: "inavlid token" })
             }
             
-            req["userId"] = decodedToken.userId
+            req.userId = decodedToken.userId
             next()
 
         } catch (erre) {
