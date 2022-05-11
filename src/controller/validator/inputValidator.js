@@ -3,7 +3,7 @@ const isValidReqBody = obj => (!obj || Object.keys(obj).length == 0) ? false : t
 const isString = st => (typeof st != "string" || st.trim().length === 0) ? false : true
 
 
-const isOptionalString = st => (typeof st != "undefined" && (typeof st != "string" || st.trim().length === 0)) ? false : true
+const isOptionalString = st => (st && isString(st)) ? false : true
 
 const isNumber = num => (typeof num != "number") ? false : true
 
@@ -26,6 +26,9 @@ const allString = (obj, optional) => {
         (error2.length != 0) ? [false, error2 + " should have valid string datatype and should be non-empty"]
             : [true]
 }
+
+
+
 // here obj can be contatin one or more array
 // we are cheking the elements of array should have string datatype
 // and should not contain empty strings
