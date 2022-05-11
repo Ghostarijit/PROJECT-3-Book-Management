@@ -28,25 +28,23 @@ const isParticularString = (st, arr) =>  // string array
         return false
     return true
 }
+
+
 // to check the values present in obj are coming or not,should be string, 
 //if optional is true then it will check datatype should be string only if values are comming otherwise ignore that field 
 const allString = (obj, optional) => {
-    let error = "",error2 ="";
+    let error = "", error2 = "";
     for (let key in obj) {
-        if ( optional === undefined) {
-            if ((obj[key]) === undefined)  error += key + " "     
-            if (typeof (obj[key]) !== "string")  error2 += key + " "       
+        if (!optional) {
+            if (!obj[key]) error += key + " "
+            if (!isString(obj[key])) error2 += key + " "
         }
-        if (optional == true) {
-            if (optional != undefined && typeof (obj[key]) !== "string")
+        if (optional == true && isOptionalString(obj[key])) 
                 error2 += key + " "
-        }
     }
-    if (error.length != 0)
-        return [false, "You'r missing Mandatory fields :- " + error]
-    if (error2.length != 0)
-        return [false, error2 + " should have valid string datatype"]
-    return [true]
+    return error.length != 0 ? [false, "You'r missing Mandatory fields :- " + error] : 
+     (error2.length != 0)? [false, error2 + " should have valid string datatype and should be non-empty"]
+    :[true]
 }
 // here obj can be contatin one or more array
 // we are cheking the elements of array should have string datatype
@@ -55,7 +53,6 @@ const arrHasString = (obj) => {
     for (let key in obj) {
         if (typeof obj[key] == 'undefined' || !Array.isArray(obj[key]))
             return [false, key + " is a mandatory field and should be an array"]
-        let arr = []
         for (let i = 0; i < obj[key].length; i++) {
             if (typeof (obj[key][i]) !== "string")
                 return [false, "please enter a valid " + key + " with array of strings"]
