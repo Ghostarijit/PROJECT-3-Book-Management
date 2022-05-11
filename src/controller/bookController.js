@@ -38,7 +38,7 @@ const createBook = async (req, res) => {
         if (isUniqueISBN == 1)
             return res.status(400).send({ status: false, message: "ISBN is already present,please enter unique one" })
 
-        const isUniqueTitle = await bookModel.findOne({ titile: title }).count()
+        const isUniqueTitle = await bookModel.findOne({ title: title }).count()
         if (isUniqueTitle == 1)
             return res.status(400).send({ status: false, message: "title is already present,please enter unique one" })
 
@@ -79,11 +79,9 @@ const getBooks = async (req, res) => {
 }
 
 const getBookById = async (req, res) => {
-    try {   
-        const bookData = req.book
-        const reviewData = await reviewModel.find({ bookId: req.book._id ,isDeleted:false}).lean()
-        bookData.reviewsData = reviewData
-        res.status(200).send({ status: true, message: "Book List", data: bookData })
+    try { // req.book coming from bookcheck.js middleware
+        req.book.reviewData = await reviewModel.find({ bookId: req.book._id, isDeleted: false }).select({ bookId: 1, reviewedBy: 1, reviewedAt: 1, rating: 1, review: 1 }).lean()
+        res.status(200).send({ status: true, message: "Book List", data: req.book })
     }
     catch (error) {
         return res.status(500).send({ status: true, data: error.message })

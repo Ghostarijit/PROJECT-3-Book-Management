@@ -9,8 +9,8 @@ const validBook = async (req, res, next) => {
     const book = await bookModel.findOne({ _id: bookId, isDeleted: false }).lean()
     if (!book)
         return res.status(404).send({ status: false, message: "No Book found" })
-        req.book = book;
-        next()
+    req.book = book;
+    next()
 }
 
-module.exports = {validBook}
+module.exports = { validBook }

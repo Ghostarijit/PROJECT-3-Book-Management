@@ -12,11 +12,8 @@ const regex = {
     releaseDate: /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/
 }
 
-const isValid = (field, regex) => {
-    if (!input.isString(field) || !regex.test(field.trim()))
-        return false
-    return true;
-}
+const isValid = (field, regex) => (!input.isString(field) || !regex.test(field.trim())) ? false : true
 
-module.exports = { isValid, regex};
+
+module.exports = { isValid, regex };
 
