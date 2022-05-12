@@ -1,6 +1,6 @@
 const userModel = require("../model/userModel")
-const input = require("./validator/inputValidator")
-const client = require("./validator/regexValidator")
+const input = require("../validator/inputValidator")
+const client = require("../validator/regexValidator")
 const jwt = require("jsonwebtoken")
 
 

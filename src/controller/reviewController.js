@@ -1,12 +1,12 @@
 const bookModel = require("../model/bookModel")
 const reviewModel = require("../model/reviewModel")
-const input = require("./validator/inputValidator")
+const input = require("../validator/inputValidator")
 const mongoose = require("mongoose")
 
 const reviewValidate = obj => {
     if (obj.rating && (!input.isNumber(obj.rating) || !(obj.rating > 0 && obj.rating < 6))) return "rating is a mandatory field and must have number 1 to 5 "
     if (!input.isOptionalString(obj.reviewedBy)) return "reviewedBy must have string datatype"
-    if (!input.isOptionalString(obj.review)) return "reviewedBy must have string datatype"
+    if (!input.isOptionalString(obj.review)) return "review must have string datatype"
 }
 
 const validateReviewId = async (id) => {
@@ -38,15 +38,12 @@ const createReview = async (req, res) => {
 
 const updateReview = async (req, res) => {
     try {
-        const reviewId = req.params.reviewId?.trim()
+        const reviewId = req.params.reviewId.trim()
         const isValid = await validateReviewId(reviewId)
         if (isValid) return res.status(isValid[0]).send({ status: false, message: isValid[1] })
 
-        let data = {
-            rating: req.body?.rating,
-            review: req.body?.review,
-            reviewedBy: req.body?.reviewedBy
-        }
+        const {rating,review,reviewedBy} = req.body
+        let data = {rating,review,reviewedBy} 
         data = JSON.parse(JSON.stringify(data))
         if (!input.isValidReqBody(data))
             return res.status(400).send({ status: false, message: "please provide rating,review,reviewedBy to update" })
@@ -55,7 +52,7 @@ const updateReview = async (req, res) => {
         if (result)
             return res.status(400).send({ status: false, message: result })
 
-        await reviewModel.updateOne({ _id: req.book._Id, isDeleted: false }, data, { new: true })
+        await reviewModel.updateOne({ _id: reviewId, isDeleted: false }, data, { new: true })
         const bookData = req.book;
         bookData.reviewsData = await reviewModel.find({ bookId: req.book._id, isDeleted: false }).select({ bookId: 1, reviewedBy: 1, reviewedAt: 1, rating: 1, review: 1 }).lean();
         return res.status(200).send({ status: true, message: "Success", data: bookData })
@@ -67,12 +64,11 @@ const updateReview = async (req, res) => {
 
 const deleteReviews = async (req, res) => {
     try {
-        const reviewId = req.params.reviewId?.trim()
-        const date = new Date()
+        const reviewId = req.params.reviewId.trim()
         const isValid = await validateReviewId(reviewId)
         if (isValid) return res.status(isValid[0]).send({ status: false, message: isValid[1] })
 
-        const review = await reviewModel.findOneAndUpdate({ _id: reviewId, isDeleted: false }, { isDeleted: true, deletedAt: date })
+        await reviewModel.findOneAndUpdate({ _id: reviewId, isDeleted: false }, { isDeleted: true, deletedAt: new Date() })
         await bookModel.updateOne({ _id: req.book._id, isDeleted: false }, { $inc: { reviews: -1 } })
         res.status(200).send({ status: true, message: "Success" })
     } catch (error) {

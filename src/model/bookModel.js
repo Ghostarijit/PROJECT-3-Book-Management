@@ -48,8 +48,7 @@ const bookSchema = new mongoose.Schema({
     subcategory: [{type:String, required:true,trim:true}],
 
     deletedAt: {
-        type: Date,
-        default: null
+        type: Date
     },
     isDeleted: {
         type: Boolean,

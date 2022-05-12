@@ -1,8 +1,8 @@
 const bookModel = require("../model/bookModel")
 const userModel = require("../model/userModel")
 const reviewModel = require("../model/reviewModel")
-const input = require("../controller/validator/inputValidator")
-const client = require("./validator/regexValidator")
+const input = require("../validator/inputValidator")
+const client = require("../validator/regexValidator")
 const mongoose = require("mongoose")
 
 const createBook = async (req, res) => {
@@ -47,7 +47,7 @@ const createBook = async (req, res) => {
             return res.status(404).send({ status: false, message: "Author Not Found" })
 
         const data = await bookModel.create({ title, excerpt, category, ISBN, releasedAt, subcategory, userId })
-        return res.status(201).send({ status: false, message: "Success", data: data })
+        return res.status(201).send({ status: true, message: "Success", data: data })
 
     }
     catch (error) {
@@ -58,9 +58,9 @@ const createBook = async (req, res) => {
 const getBooks = async (req, res) => {
 
     const filter = {
-        userId: req.query?.userId,
-        category: req.query?.category,                        // by concat [1,2] [4,5] => [1,2,4,5]
-        subcategory: req.query?.subcategory && { $all: [].concat(req.query.subcategory) },
+        userId: req.query.userId,
+        category: req.query.category,                        // by concat [1,2] [4,5] => [1,2,4,5]
+        subcategory: req.query.subcategory && { $all: [].concat(req.query.subcategory) },
         isDeleted: false
     }
 
@@ -89,29 +89,25 @@ const getBookById = async (req, res) => {
 }
 
 const updateBooks = async (req, res) => {
-    try {
-        let data = {
-            title: req.body?.title,
-            excerpt: req.body?.excerpt,
-            releasedAt: req.body?.releasedAt,
-            ISBN: req.body?.ISBN
-        }
+    try {   
+        const {title,excerpt,releasedAt,ISBN} = req.body
+        let data = {title,excerpt,releasedAt,ISBN}
         data = JSON.parse(JSON.stringify(data))
         if (!input.isValidReqBody(data))
             return res.status(400).send({ status: false, message: "Atleast enter one of these : title,excrpt,releasedAt,ISBN  to update Data" })
 
-        if (data.releasedAt)
-            if (!client.isValid(data.releasedAt, client.regex.releaseDate))
+        if (releasedAt)
+            if (!client.isValid(releasedAt, client.regex.releaseDate))
                 return res.status(400).send({ status: false, message: "please enter release date in YYYY-MM-DD format" })
-        if (data.ISBN)
-            if (!client.isValid(data.ISBN, client.regex.isbn))
+        if (ISBN)
+            if (!client.isValid(ISBN, client.regex.isbn))
                 return res.status(400).send({ status: false, message: "please enter 13 digit long ISBN and in format like XXX-XXXXXXXXXX  " })
 
-        const isUniqueISBN = await bookModel.findOne({ ISBN: data.ISBN }).count()
+        const isUniqueISBN = await bookModel.findOne({ ISBN: ISBN }).count()
         if (isUniqueISBN == 1)
             return res.status(400).send({ status: false, message: "ISBN is already present,please enter unique one" })
 
-        const isUniqueTitle = await bookModel.findOne({ title: data.title }).count()
+        const isUniqueTitle = await bookModel.findOne({ title: title }).count()
         if (isUniqueTitle == 1)
             return res.status(400).send({ status: false, message: "title is already present,please enter unique one" })
 
@@ -127,8 +123,7 @@ const updateBooks = async (req, res) => {
 
 const deleteBooks = async (req, res) => {
     try {
-        const date = new Date();
-        const book = await bookModel.findOneAndUpdate({ _id: req.book._id, isDeleted: false }, { isDeleted: true, deletedAt: date })
+        await bookModel.findOneAndUpdate({ _id: req.book._id, isDeleted: false }, { isDeleted: true, deletedAt: new Date() })
         res.status(200).send({ status: true, message: "Success" })
     }
     catch (error) {
