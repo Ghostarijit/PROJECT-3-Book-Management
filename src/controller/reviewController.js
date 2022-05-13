@@ -23,17 +23,20 @@ const createReview = async (req, res) => {
         const result = reviewValidate(data)
         if (result)
             return res.status(400).send({ status: false, message: result })
+        if (isDeleted && typeof isDeleted !== 'boolean')
+            return res.status(400).send({ status: false, message: "isDeleted should be Boolean and must be false" })
+        if (isDeleted)
+            return res.status(400).send({ status: false, message: "isDeleted must be false, you can't delete during" })
         data.bookId = req.book._id
         data.reviewedAt = new Date()
-        await reviewModel.create(data)
+        const createdReview = await reviewModel.create(data)
         const bookData = await bookModel.findOneAndUpdate({ _id: data.bookId, isDeleted: false }, { $inc: { reviews: 1 } }, { new: true }).lean()
-        bookData.reviewsData = await reviewModel.find({ bookId: data.bookId, isDeleted: false }).select({ bookId: 1, reviewedBy: 1, reviewedAt: 1, rating: 1, review: 1 }).lean();
+        bookData.reviewsData = createReview;
         res.status(201).send({ status: true, message: "Success", data: bookData })
     }
     catch (error) {
         res.status(500).send({ status: false, message: error.message })
     }
-
 }
 
 const updateReview = async (req, res) => {
@@ -42,8 +45,8 @@ const updateReview = async (req, res) => {
         const isValid = await validateReviewId(reviewId)
         if (isValid) return res.status(isValid[0]).send({ status: false, message: isValid[1] })
 
-        const {rating,review,reviewedBy} = req.body
-        let data = {rating,review,reviewedBy} 
+        const { rating, review, reviewedBy } = req.body
+        let data = { rating, review, reviewedBy }
         data = JSON.parse(JSON.stringify(data))
         if (!input.isValidReqBody(data))
             return res.status(400).send({ status: false, message: "please provide rating,review,reviewedBy to update" })
@@ -52,9 +55,9 @@ const updateReview = async (req, res) => {
         if (result)
             return res.status(400).send({ status: false, message: result })
 
-        await reviewModel.updateOne({ _id: reviewId, isDeleted: false }, data, { new: true })
+        const updatedReview= await reviewModel.findOneAndUpdate({ _id: reviewId, isDeleted: false }, data, { new: true })
         const bookData = req.book;
-        bookData.reviewsData = await reviewModel.find({ bookId: req.book._id, isDeleted: false }).select({ bookId: 1, reviewedBy: 1, reviewedAt: 1, rating: 1, review: 1 }).lean();
+        bookData.reviewsData = updateReview;
         return res.status(200).send({ status: true, message: "Success", data: bookData })
     }
     catch (error) {

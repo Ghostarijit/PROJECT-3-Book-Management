@@ -11,7 +11,7 @@ const createBook = async (req, res) => {
         if (!input.isValidReqBody(req.body))
             return res.status(400).send({ status: false, message: "Please enter Book Details" })
 
-        const { title, excerpt, userId, ISBN, category, subcategory, releasedAt } = req.body
+        const { title, excerpt, userId, ISBN, category, subcategory, releasedAt, isDeleted } = req.body
 
         const allInputValid = input.allString({ title, excerpt, category, ISBN, releasedAt, userId })
         if (!allInputValid[0])
@@ -32,6 +32,12 @@ const createBook = async (req, res) => {
 
         if (!client.isValid(releasedAt, client.regex.releaseDate))
             return res.status(400).send({ status: false, message: "releaseAt should have date in YYYY-MM-DD format  " })
+
+        if (isDeleted && typeof isDeleted !== 'boolean')
+            return res.status(400).send({ status: false, message: "isDeleted should be Boolean and must be false" })
+
+        if (isDeleted)
+            return res.status(400).send({ status: false, message: "isDeleted must be false, you can't delete during" })
 
         // checking title,isbn,userid unique or not
         const isUniqueISBN = await bookModel.findOne({ ISBN: ISBN }).count()
@@ -89,9 +95,9 @@ const getBookById = async (req, res) => {
 }
 
 const updateBooks = async (req, res) => {
-    try {   
-        const {title,excerpt,releasedAt,ISBN} = req.body
-        let data = {title,excerpt,releasedAt,ISBN}
+    try {
+        const { title, excerpt, releasedAt, ISBN } = req.body
+        let data = { title, excerpt, releasedAt, ISBN }
         data = JSON.parse(JSON.stringify(data))
         if (!input.isValidReqBody(data))
             return res.status(400).send({ status: false, message: "Atleast enter one of these : title,excrpt,releasedAt,ISBN  to update Data" })

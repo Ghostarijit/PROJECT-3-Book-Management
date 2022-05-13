@@ -46,6 +46,11 @@ const createuser = async (req, res) => {
         if (!client.isValid(address.pincode, client.regex.pincode))
             return res.status(400).send({ status: false, message: "in address pincode must be present present & 6 digit long" })
 
+        if (isDeleted && typeof isDeleted !== 'boolean')
+            return res.status(400).send({ status: false, message: "isDeleted should be Boolean and must be false" })
+
+        if (isDeleted)
+            return res.status(400).send({ status: false, message: "isDeleted must be false, you can't delete during" })
 
         // email & mobile unique or not
         const isEmailUnique = await userModel.findOne({ email: email }).count()
