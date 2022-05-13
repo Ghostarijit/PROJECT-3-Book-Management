@@ -12,7 +12,7 @@ const createuser = async (req, res) => {
             return res.status(400).send({ status: false, message: "plz enter some data" })
 
         //extracting variables from request body
-        const { phone, name, title, email, password, address } = req.body
+        const { phone, name, title, email, password, address,isDeleted } = req.body
 
         //all mandatory fields are present and strings
         const allInputValid = input.allString({ title, name, phone, email, password, "street_in_address ": address.street, "city_in_address ": address.city, "pincode_in_address ": address.pincode })

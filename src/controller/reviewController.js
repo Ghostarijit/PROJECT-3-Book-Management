@@ -19,7 +19,7 @@ const createReview = async (req, res) => {
     try {
         if (!input.isValidReqBody(req.body))
             return res.status(400).send({ status: false, message: "Please provide review details" })
-        const data = { reviewedBy, rating, review } = req.body
+        const data = { reviewedBy, rating, review ,isDeleted} = req.body
         const result = reviewValidate(data)
         if (result)
             return res.status(400).send({ status: false, message: result })
