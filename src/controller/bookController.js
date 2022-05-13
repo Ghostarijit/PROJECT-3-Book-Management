@@ -2,7 +2,7 @@ const bookModel = require("../model/bookModel")
 const userModel = require("../model/userModel")
 const reviewModel = require("../model/reviewModel")
 const input = require("../validator/inputValidator")
-const client = require("../validator/regexValidator")
+const regex = require("../validator/regexValidator")
 const mongoose = require("mongoose")
 
 const createBook = async (req, res) => {
@@ -23,14 +23,14 @@ const createBook = async (req, res) => {
         if (req.userId !== userId.trim())
             return res.status(400).send({ status: false, message: "Use your own userId" })
 
-        if (!client.isValid(ISBN, client.regex.isbn))
+        if (!regex.isValid(ISBN, regex.regex.isbn))
             return res.status(400).send({ status: false, message: " please enter a 13 digit long valid ISBN and in format like XXX-XXXXXXXXXX" })
 
         const validSbucategory = input.arrHasString({ subcategory });
         if (!validSbucategory[0])
             return res.status(400).send({ status: false, message: validSbucategory[1] })
 
-        if (!client.isValid(releasedAt, client.regex.releaseDate))
+        if (!regex.isValid(releasedAt, regex.regex.releaseDate))
             return res.status(400).send({ status: false, message: "releaseAt should have date in YYYY-MM-DD format  " })
 
         if (isDeleted && typeof isDeleted !== 'boolean')
@@ -103,10 +103,10 @@ const updateBooks = async (req, res) => {
             return res.status(400).send({ status: false, message: "Atleast enter one of these : title,excrpt,releasedAt,ISBN  to update Data" })
 
         if (releasedAt)
-            if (!client.isValid(releasedAt, client.regex.releaseDate))
+            if (!regex.isValid(releasedAt, regex.regex.releaseDate))
                 return res.status(400).send({ status: false, message: "please enter release date in YYYY-MM-DD format" })
         if (ISBN)
-            if (!client.isValid(ISBN, client.regex.isbn))
+            if (!regex.isValid(ISBN, regex.regex.isbn))
                 return res.status(400).send({ status: false, message: "please enter 13 digit long ISBN and in format like XXX-XXXXXXXXXX  " })
 
         const isUniqueISBN = await bookModel.findOne({ ISBN: ISBN }).count()

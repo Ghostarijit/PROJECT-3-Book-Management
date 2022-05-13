@@ -10,8 +10,6 @@ const isNumber = num => (typeof num != "number") ? false : true
 const isParticularString = (st, arr) => (!isString(st) || !arr.includes(st)) ? false : true
 
 
-// to check the values present in obj are coming or not,should be string, 
-//if optional is true then it will check datatype should be string only if values are comming otherwise ignore that field 
 const allString = (obj) => {
     let error = "", error2 = "";
     for (let key in obj) {
@@ -24,10 +22,6 @@ const allString = (obj) => {
 }
 
 
-
-// here obj can be contatin one or more array
-// we are cheking the elements of array should have string datatype
-// and should not contain empty strings
 const arrHasString = (obj) => {
     for (let key in obj) {
         if (!obj[key] || !Array.isArray(obj[key]))

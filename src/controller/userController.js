@@ -1,6 +1,6 @@
 const userModel = require("../model/userModel")
 const input = require("../validator/inputValidator")
-const client = require("../validator/regexValidator")
+const regex = require("../validator/regexValidator")
 const jwt = require("jsonwebtoken")
 
 
@@ -20,21 +20,21 @@ const createuser = async (req, res) => {
             return res.status(400).send({ status: false, message: allInputValid[1] })
 
         let output;
-        //input validations    // isValid function is defined in client 
-        if (!client.isValid(name, client.regex.name))
+        //input validations    // isValid function is defined in regex 
+        if (!regex.isValid(name, regex.regex.name))
             return res.status(400).send({ status: false, message: "Please enter valid full Name" })
 
         if (!input.isParticularString(title, ["Mr", "Miss", "Mrs"]))
             return res.status(400).send({ status: false, message: "plz enter valid title one of Mr,Miss or Mrs" })
 
-        if (!client.isValid(email, client.regex.email))
+        if (!regex.isValid(email, regex.regex.email))
             return res.status(400).send({ status: false, message: "Please enter valid email address" });
 
-        if (!client.isValid(phone, client.regex.mobile)) {
+        if (!regex.isValid(phone, regex.regex.mobile)) {
             return res.status(400).send({ status: false, message: "phone number should have 10 digits only starting with 6,7,8,9" });
         }
 
-        if (!client.isValid(password, client.regex.password))
+        if (!regex.isValid(password, regex.regex.password))
             return res.status(400).send({ status: false, message: "enter valid password with following conditions 1.At least one digit, 2.At least one lowercase character,3.At least one uppercase character,4.At least one special character, 5. At least 8 characters in length, but no more than 16" });
 
         if (!input.isString(address.street))
@@ -43,7 +43,7 @@ const createuser = async (req, res) => {
         if (!input.isString(address.city))
             return res.status(400).send({ status: false, message: "in address  please enter valid city" })
 
-        if (!client.isValid(address.pincode, client.regex.pincode))
+        if (!regex.isValid(address.pincode, regex.regex.pincode))
             return res.status(400).send({ status: false, message: "in address pincode must be present present & 6 digit long" })
 
         if (isDeleted && typeof isDeleted !== 'boolean')
@@ -77,11 +77,11 @@ const loginUser = async function (req, res) {
 
         let { email, password } = req.body
 
-        if (!client.isValid(email, client.regex.email)) {
+        if (!regex.isValid(email, regex.regex.email)) {
             return res.status(400).send({ status: false, msg: "Please enter valid email" })
         }
 
-        if (!client.isValid(password, client.regex.password))
+        if (!regex.isValid(password, regex.regex.password))
             return res.status(400).send({ status: false, msg: "Please enter valid password" })
 
         let user = await userModel.findOne({ email: email, password: password }).select({ _id: 1 }).lean();

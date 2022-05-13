@@ -55,9 +55,9 @@ const updateReview = async (req, res) => {
         if (result)
             return res.status(400).send({ status: false, message: result })
 
-        const updatedReview= await reviewModel.findOneAndUpdate({ _id: reviewId, isDeleted: false }, data, { new: true })
+        const updatedReview = await reviewModel.findOneAndUpdate({ _id: reviewId, isDeleted: false }, data, { new: true })
         const bookData = req.book;
-        bookData.reviewsData = updateReview;
+        bookData.reviewsData = updatedReview;
         return res.status(200).send({ status: true, message: "Success", data: bookData })
     }
     catch (error) {
