@@ -46,9 +46,11 @@ const reviewsData = async function(req, res) {
             if (typeof review !== "string" || review.trim().length === 0) return res.status(400).send({ status: false, msg: "please enter valid review" });
             data1.review = data1.review.trim()
         }
+        if(typeof rating!== "number")
+        return res.status(400).send({ status: false, msg: "rating is mandatory and should have number datatype" });
         let rat = /^[0-5\.]{1,5}$/
         if (!rat.test(rating)) {
-            return res.status(400).send({ status: false, msg: " review number should  digits only and should be 1 to 5" });
+            return res.status(400).send({ status: false, msg: " rating  should have  digits only and should be 1 to 5" });
         }
         // rating = rating
         let rev = await reviewModel.create(data1)

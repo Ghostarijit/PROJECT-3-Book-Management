@@ -15,6 +15,10 @@ const createBooks = async function(req, res) {
 
         let { title, userId, excerpt, ISBN, category, subcategory, reviews, releasedAt, isDeleted } = data
         // Book is same Book or not
+        if( typeof title!=="string")
+        return res.status(400).send({status:false,message:"title should be string"})
+        if( typeof ISBN!=="string")
+        return res.status(400).send({status:false,message:"ISBN should be string"})
         const check = await bookModel.findOne({ $or: [{ title: title?.trim() }, { ISBN: ISBN?.trim() }] })
        // console.table(check)
         if (check) return res.status(400).send({ status: false, msg: "this book already exist" })
